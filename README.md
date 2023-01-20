@@ -6,13 +6,11 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
 
-### <span class="material-symbols-outlined">group</span> Credits
+### Credits
 
 #### Created by [@yayashn](https://github.com/yayashn/RowindCSS)
 
-#### Developed with :material-cards-heart:{ .red-heart } at [Aether Interactive](https://dev.ataether.com)
+#### Developed with :purple_heart: at [Aether Interactive](https://dev.ataether.com)
 
-- :material-note-text:{ title="Designer" } :material-cog:{ title="Engineer" } [@SiriusLatte](https://github.com/siriuslatte), Ademir Sanchez
-- :material-note-text:{ title="Designer" } [@RigidStudios](https://github.com/RigidStudios), Luna Ivarsson
-- :material-presentation:{ title="Manager" } [@Sash](https://www.twitch.tv/sashkokit), Aleksandar Kitanov
-- :material-help-network-outline:{ title="Advisor" } [@Haashim](https://haash.im/), Haashim Hussain
+- :memo: :gear: [@RigidStudios](https://github.com/RigidStudios), Luna Ivarsson
+- :inbox_tray: [@Sash](https://www.twitch.tv/sashkokit), Aleksandar Kitanov

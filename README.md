@@ -3,8 +3,6 @@
 
 *This is a fork of RowindCSS, it was separated from the original repo as it uses a completely separate code structure and fundamentalism without interfering with yayashn's project.*
 
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
 
 ### Credits
 

@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
 
-### <span class="material-icons">account-group</span> Credits
+### <span class="material-symbols-outlined">group</span> Credits
 
 #### Created by [@yayashn](https://github.com/yayashn/RowindCSS)
 

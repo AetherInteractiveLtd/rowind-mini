@@ -8,9 +8,9 @@
 
 ### Credits
 
-#### Created by [@yayashn](https://github.com/yayashn/RowindCSS)
+#### :memo: :gear: :bulb: Created by [@yayashn](https://github.com/yayashn/RowindCSS)
 
-#### Developed with :purple_heart: at [Aether Interactive](https://dev.ataether.com)
+#### Modified with :purple_heart: at [Aether Interactive](https://dev.ataether.com)
 
 - :memo: :gear: [@RigidStudios](https://github.com/RigidStudios), Luna Ivarsson
 - :inbox_tray: [@Sash](https://www.twitch.tv/sashkokit), Aleksandar Kitanov

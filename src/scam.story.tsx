@@ -30,15 +30,17 @@ enum ValType {
 enum Keys {
     bgC3 = "BackgroundColor3",
     bgTrans = "BackgroundTransparency",
-    w = "#x-axis-size",
-    h = "#y-axis-size",
-
+    bgHidden = "#bg-hidden",
+    w = "#x-size",
+    wAuto = "#x-auto",
+    h = "#y-size",
+    hAuto = "#y-auto"
 }
 
-const keys: { tag: string, [key: number]: Keys }[] = [
-    { tag: "bg-", [ValType.Color]: Keys.bgC3, [ValType.Color3]: Keys.bgC3 },
-    { tag: "w-", [ValType.Number]: Keys.w },
-    { tag: "h-", [ValType.Number]: Keys.h }
+const keys: { tag: string, special: { [key: string]: Keys }, [key: number]: Keys }[] = [
+    { tag: "bg-", special: { "hidden": Keys.bgHidden }, [ValType.Color]: Keys.bgC3, [ValType.Color3]: Keys.bgC3, [ValType.Number]: Keys.bgTrans },
+    { tag: "w-", special: { "auto": Keys.wAuto }, [ValType.Number]: Keys.w },
+    { tag: "h-", special: { "auto": Keys.hAuto }, [ValType.Number]: Keys.h }
 ]
 
 type ProcessInformation = {
@@ -139,7 +141,9 @@ function styleFromKeyData(data: ProcessInformation) {
     const BackgroundColor3 = keyData.get(Keys.bgC3) as Color3;
     
     let xAxis = keyData.get(Keys.w) as number;
+    let xAuto = keyData.get(Keys.wAuto) as boolean;
     let yAxis = keyData.get(Keys.h) as number;
+    let yAuto = keyData.get(Keys.hAuto) as boolean;
     const Size = new UDim2(0, xAxis, 0, yAxis);
 
     let object = {

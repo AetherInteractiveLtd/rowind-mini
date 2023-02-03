@@ -54,6 +54,7 @@ function getBaseProps(className: string, active: ActiveStates, etype: ElementTyp
     return elementBaseProps;
 }
 
+
 function getChildrenForProps(className: string, active: ActiveStates) {
     let children: Roact.Element[] = [];
 

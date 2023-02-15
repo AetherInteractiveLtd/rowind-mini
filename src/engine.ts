@@ -92,7 +92,7 @@ export class RowindClassEngine {
         //     // PANIC! I don't support fractions yet, I'll let this be a number.
         // }
 
-        let maybeANumber = tonumber(valStr.match("[0-9%.]+")[0])
+        let maybeANumber = tonumber(valStr.match("[%-0-9%.]+")[0])
         if (maybeANumber) {
             return maybeANumber as never;
         }

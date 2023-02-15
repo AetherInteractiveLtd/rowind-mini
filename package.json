@@ -1,6 +1,6 @@
 {
-  "name": "rowind-mini",
-  "version": "1.0.0",
+  "name": "@rbxts/rowind-mini",
+  "version": "1.0.4",
   "description": "",
   "main": "out/init.lua",
   "scripts": {
@@ -32,10 +32,8 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@rbxts/log": "^0.6.3",
     "@rbxts/object-utils": "^1.0.4",
     "@rbxts/roact": "^1.4.4-ts.0",
-    "@rbxts/services": "^1.5.1",
-    "@rbxts/zircon": "^1.0.9"
+    "@rbxts/services": "^1.5.1"
   }
 }

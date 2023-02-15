@@ -35,14 +35,15 @@ interface RowindComponentProps<T extends ObjectType> {
     Text?: string,
     Image?: string,
     className: string,
+    Name: string | number
 }
 
-class WorseRowindComponent<T extends ObjectType> extends Roact.Component<RowindComponentProps<T>, { activeState: ActiveStates }> {
+class WorseRowindComponent<T extends ObjectType> extends Roact.Component<PropsWithEventsAndChildren<RowindComponentProps<T>>, { activeState: ActiveStates }> {
     protected neededFrames: number = 0;
 
     private animationLength: number = 10;
     
-    constructor(props: { flavour: T, Text?: string, className: string, Image?: string }) {
+    constructor(props: { flavour: T } & PropsWithEventsAndChildren<RowindComponentProps<T>>) {
         super(props);
 
         this.state = { activeState: {} as ActiveStates };
@@ -67,34 +68,102 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<RowindC
 
         switch (this.props.flavour) {
             case ObjectType.Div:
-                return <frame {...v.Data} Event={{
+                return <frame Key={this.props.Name} Active={true} {...v.Data} Event={{
                     MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-                    MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength)
+                    MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+                    InputBegan: (_, input) => {
+                        if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                            this.props.mouseDown?.(input);
+                            if (this.props.mouseUp) {
+                                let myConnection: RBXScriptConnection;
+                                myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
+                                    this.props.mouseUp?.(input);
+                                    myConnection.Disconnect();
+                                })
+                            }
+                        }
+                    },
+                    InputEnded: (_, input) => {
+                        if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                            this.props.mouseUp?.(input);
+                        }
+                    }
                 }}>
                     {v.Children}
                     {this.props[Roact.Children]}
                 </frame>
             case ObjectType.Span:
-                return <textlabel {...v.Data} Event={{
+                return <textlabel Key={this.props.Name} Active={true} {...v.Data} Event={{
                     MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-                    MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength)
+                    MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+                    InputBegan: (_, input) => {
+                        if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                            this.props.mouseDown?.(input);
+                            if (this.props.mouseUp) {
+                                let myConnection: RBXScriptConnection;
+                                myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
+                                    this.props.mouseUp?.(input);
+                                    myConnection.Disconnect();
+                                })
+                            }
+                        }
+                    },
+                    InputEnded: (_, input) => {
+                        if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                            this.props.mouseUp?.(input);
+                        }
+                    }
                 }} Text={this.props.Text ?? ""}>
                     {v.Children}
                     {this.props[Roact.Children]}
                 </textlabel>
             case ObjectType.Button:
                 if (!this.props.Image) {
-                    <textbutton {...v.Data} Event={{
+                    <textbutton Key={this.props.Name} Active={true} {...v.Data} Event={{
                         MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-                        MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength)
+                        MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+                        InputBegan: (_, input) => {
+                            if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                                this.props.mouseDown?.(input);
+                                if (this.props.mouseUp) {
+                                    let myConnection: RBXScriptConnection;
+                                    myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
+                                        this.props.mouseUp?.(input);
+                                        myConnection.Disconnect();
+                                    })
+                                }
+                            }
+                        },
+                        InputEnded: (_, input) => {
+                            if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                                this.props.mouseUp?.(input);
+                            }
+                        }
                     }} Text={this.props.Text ?? ""}>
                         {v.Children}
                         {this.props[Roact.Children]}
                     </textbutton>
                 } else {
-                    <imagebutton {...v.Data} Event={{
+                    <imagebutton Key={this.props.Name} Active={true} {...v.Data} Event={{
                         MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-                        MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength)
+                        MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+                        InputBegan: (_, input) => {
+                            if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                                this.props.mouseDown?.(input);
+                                if (this.props.mouseUp) {
+                                    let myConnection: RBXScriptConnection;
+                                    myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
+                                        this.props.mouseUp?.(input);
+                                        myConnection.Disconnect();
+                                    })
+                                }
+                            }
+                        },
+                        InputEnded: (_, input) => {
+                            if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+                                this.props.mouseUp?.(input);
+                            }
+                        }
                     }} Image={this.props.Image ?? ""}>
                         {v.Children}
                         {this.props[Roact.Children]}
@@ -151,14 +220,21 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<RowindC
 // Div,
 // Span,
 
-export function Div(props: PropsWithChildren<{ className: string }>) {
-    return (<WorseRowindComponent flavour={ObjectType.Div} className={props.className}>{props[Roact.Children]}</WorseRowindComponent>)
+type PropsWithEventsAndChildren<X> = PropsWithChildren<X> & {
+    mouseDown?: (input: InputObject) => void;
+    mouseUp?: (input: InputObject) => void;
 }
 
-export function Span(props: PropsWithChildren<{ className: string, Text: string }>) {
-    return (<WorseRowindComponent flavour={ObjectType.Span} className={props.className} Text={props.Text}>{props[Roact.Children]}</WorseRowindComponent>)
+let _counter: number = 0;
+
+export function Div(props: PropsWithEventsAndChildren<{ className: string, Key?: string | number }>) {
+    return (<WorseRowindComponent Name={props.Key ?? _counter++} mouseUp={props.mouseUp} mouseDown={props.mouseDown} flavour={ObjectType.Div} className={props.className}>{props[Roact.Children]}</WorseRowindComponent>)
 }
 
-export function Button(props: PropsWithChildren<{ className: string, Text: string, Image: string }>) {
-    return (<WorseRowindComponent flavour={ObjectType.Button} className={props.className} Text={props.Text} Image={props.Image}>{props[Roact.Children]}</WorseRowindComponent>)
+export function Span(props: PropsWithEventsAndChildren<{ className: string, Key?: string | number, Text: string }>) {
+    return (<WorseRowindComponent Name={props.Key ?? _counter++} mouseUp={props.mouseUp} mouseDown={props.mouseDown} flavour={ObjectType.Span} className={props.className} Text={props.Text}>{props[Roact.Children]}</WorseRowindComponent>)
+}
+
+export function Button(props: PropsWithEventsAndChildren<{ className: string, Key?: string | number, Text?: string, Image?: string }>) {
+    return (<WorseRowindComponent Name={props.Key ?? _counter++} mouseUp={props.mouseUp} mouseDown={props.mouseDown} flavour={ObjectType.Button} className={props.className} Text={props.Text} Image={props.Image}>{props[Roact.Children]}</WorseRowindComponent>)
 }

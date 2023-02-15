@@ -23,21 +23,46 @@ ClassProcessor.createSpecial(
     }
 );
 
+ClassProcessor.createSpecial(
+    "clip",
+    () => {
+        return [ "clip", true ]
+    },
+    [ ObjectType.Span, ObjectType.Div, ObjectType.Button ],
+    (properties, getValue) => {
+        return { ...properties, ClipsDescendants: getValue<boolean>("clip") };
+    }
+);
+
 ClassProcessor.createNormal(
     "bg-",
     (className: string, parseMe, stripStart) => {
         let stripped = stripStart(className);
-        return [ "bgcol", parseMe(stripped) ];
+        let v = parseMe(stripped);
+        if (typeIs(v, "number")) {
+            return [ "bg-transparency", v ]
+        } else {
+            return [ "bgcol", v ];
+        }
     },
     [ ObjectType.Div, ObjectType.Span ],
     (properties, getValue) => {
-        return { ...properties, BackgroundColor3: getValue<Color3>("bgcol") };
+        return { ...properties, BackgroundTransparency: (getValue<boolean>("transparent") ? 1 : undefined) ?? getValue<number>("bg-transparency") ?? 0, BackgroundColor3: getValue<Color3>("bgcol") };
     },
 );
 
 const fonts = {
     Sono: 12187374537,
 }
+
+ClassProcessor.createNormal(
+    "align-",
+    (className: string, parseMe, stripStart) => {
+        let stripped = stripStart(className);
+        return [ "text-align", stripped === 'left' ? Enum.TextXAlignment.Left : (stripped === 'center' ? Enum.TextXAlignment.Center : Enum.TextXAlignment.Right) ];
+    },
+    [ ObjectType.Span ]
+);
 
 ClassProcessor.createNormal(
     "text-",
@@ -47,18 +72,29 @@ ClassProcessor.createNormal(
 
         let isBuiltinFont = !!(Enum.Font.GetEnumItems().find(x => x.Name === v));
 
-        if (typeIs(v, "Color3")) {
+        if (v === 'truncate') {
+            return [ "text-truncate", Enum.TextTruncate.AtEnd ];
+        } else if (typeIs(v, "Color3")) {
             return [ "text-color", v ];
         } else if (typeIs(v, "string") && (v in fonts || isBuiltinFont)) {
             let potentialFont = fonts[v as keyof typeof fonts]
-            return [ "text-font", potentialFont ? Font.fromId(potentialFont) : Enum.Font[v as never] ];
+            return [ "text-font", potentialFont ? Font.fromId(potentialFont) : Font.fromEnum(Enum.Font[v as never]) ];
         } else {
             return [ "text-size", v ];
         }
     },
     [ ObjectType.Span ],
     (properties, getValue) => {
-        return { ...properties, Font: getValue<Font>("text-font") ?? Enum.Font.Arial, TextColor3: getValue<Color3>("text-color"), TextSize: getValue<number>("text-size") ?? 10 };
+        let TextSize = getValue<number>("text-size");
+        return {
+            ...properties,
+            TextXAlignment: getValue<Enum.TextXAlignment>("text-align") ?? Enum.TextXAlignment.Left,
+            FontFace: getValue<Font>("text-font") ?? Font.fromEnum(Enum.Font.Arial),
+            TextColor3: getValue<Color3>("text-color"),
+            TextSize: TextSize ?? 10,
+            TextScaled: !TextSize,
+            TextTruncate: getValue<Enum.TextTruncate>("text-truncate") ?? Enum.TextTruncate.None
+        };
     },
 );
 
@@ -87,7 +123,31 @@ function isPercentage(str: string) {
     return false;
 }
 
-print(isPercentage("200%"));
+ClassProcessor.createNormal(
+    "x-",
+    (className: string, parseMe, stripStart) => {
+        let stripped = stripStart(className);
+        if (isPercentage(stripped)) {
+            return [ "x-scale", parseMe(stripped) ]
+        } else {
+            return [ "x", parseMe(stripped) ];
+        }
+    },
+    [ ObjectType.Div, ObjectType.Span, ObjectType.Button ]
+);
+
+ClassProcessor.createNormal(
+    "y-",
+    (className: string, parseMe, stripStart) => {
+        let stripped = stripStart(className);
+        if (isPercentage(stripped)) {
+            return [ "y-scale", parseMe(stripped) ]
+        } else {
+            return [ "y", parseMe(stripped) ];
+        }
+    },
+    [ ObjectType.Div, ObjectType.Span, ObjectType.Button ]
+);
 
 ClassProcessor.createNormal(
     "w-",
@@ -99,7 +159,7 @@ ClassProcessor.createNormal(
             return [ "width", parseMe(stripped) ];
         }
     },
-    [ ObjectType.Div, ObjectType.Span ]
+    [ ObjectType.Div, ObjectType.Span, ObjectType.Button ]
 );
 
 ClassProcessor.createNormal(
@@ -112,11 +172,20 @@ ClassProcessor.createNormal(
             return [ "height", parseMe(stripped) ];
         }
     },
-    [ ObjectType.Div, ObjectType.Span ],
+    [ ObjectType.Div, ObjectType.Span, ObjectType.Button ],
     (properties, getValue) => {
         return {
             ...properties,
-            Size: new UDim2((getValue<number>("width-scale") ?? 0) / 100, getValue<number>("width") ?? 0, (getValue<number>("height-scale") ?? 0) / 100, getValue<number>("height") ?? 0)
+            Size: new UDim2(
+                (getValue<number>("width-scale") ?? 0) / 100, // xScale
+                getValue<number>("width") ?? 0, // xOffset
+                (getValue<number>("height-scale") ?? 0) / 100, // yScale
+                getValue<number>("height") ?? 0), // yOffset
+            Position: new UDim2(
+                (getValue<number>("x-scale") ?? 0) / 100, // xScale
+                getValue<number>("x") ?? 0, // xOffset
+                (getValue<number>("y-scale") ?? 0) / 100, // yScale
+                getValue<number>("y") ?? 0) // yOffset
         };
     },
 );
@@ -127,7 +196,7 @@ ClassProcessor.createNormal(
         let stripped = stripStart(className);
         return [ "rounded", parseMe(stripped) ];
     },
-    [ ObjectType.Div, ObjectType.Span ],
+    [ ObjectType.Div, ObjectType.Span, ObjectType.Button ],
     (properties, getValue) => {
         const vRounded = getValue<number>("rounded");
 
@@ -155,6 +224,21 @@ ClassProcessor.createNormal(
 );
 
 ClassProcessor.createNormal(
+    "anchor-",
+    (className: string, parseMe, stripStart) => {
+        let stripped = stripStart(className).split("-");
+        return [ "anchor", new Vector2(parseMe(stripped[0]) as number ?? 0, parseMe(stripped[1]) as number ?? 0) ];
+    },
+    [ ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button ],
+    (properties, getValue) => {
+        return {
+            ...properties,
+            AnchorPoint: getValue<Vector2>("anchor")
+        }
+    }
+);
+
+ClassProcessor.createNormal(
     "flex-",
     (className: string, _, stripStart) => {
         let stripped = stripStart(className);
@@ -165,13 +249,22 @@ ClassProcessor.createNormal(
         const flex = getValue<string>("flex");
 
         function mapFlexJustifiers<T extends 'horizontal' | 'vertical'>(v: string, kind: T): T extends 'horizontal' ? Enum.HorizontalAlignment : Enum.VerticalAlignment {
-            switch (v) {
-                case 'center': return kind === 'horizontal' ? Enum.HorizontalAlignment.Center as never : Enum.VerticalAlignment.Center as never;
-                case 'left': return Enum.HorizontalAlignment.Left as never;
-                case 'bottom': return Enum.VerticalAlignment.Bottom as never;
-                case 'right': return Enum.HorizontalAlignment.Right as never;
-                case 'top': return Enum.VerticalAlignment.Top as never;
-                default: return undefined as never;
+            if (v === 'center') {
+                return kind === 'horizontal' ? Enum.HorizontalAlignment.Center as never : Enum.VerticalAlignment.Center as never;
+            }
+
+            if (kind === 'horizontal') {
+                switch (v) {
+                    case 'left': return Enum.HorizontalAlignment.Left as never;
+                    case 'right': return Enum.HorizontalAlignment.Right as never;
+                    default: return Enum.HorizontalAlignment.Left as never;
+                }
+            } else {
+                switch (v) {
+                    case 'bottom': return Enum.VerticalAlignment.Bottom as never;
+                    case 'top': return Enum.VerticalAlignment.Top as never;
+                    default: return Enum.VerticalAlignment.Top as never;
+                }
             }
         }
 
@@ -180,15 +273,24 @@ ClassProcessor.createNormal(
             ...properties,
             CHILDREN: [
                 <uilistlayout
-                    FillDirection={Enum.FillDirection.Vertical}
-                    HorizontalAlignment={mapFlexJustifiers(flex.split("-")[0], 'horizontal')}
-                    VerticalAlignment={mapFlexJustifiers(flex.split("-")[0], 'vertical')}
+                    FillDirection={getValue<Enum.FillDirection>("direction") ?? Enum.FillDirection.Vertical}
+                    HorizontalAlignment={mapFlexJustifiers(flex.size() > 1 ? flex.split("-")[0] : flex, 'horizontal')}
+                    VerticalAlignment={mapFlexJustifiers(flex.size() > 1 ? flex.split("-")[1] : flex, 'vertical')}
                     Padding={new UDim(getValue<number>("item-offset-scale"), getValue<number>("item-offset"))}
                 />
             ]
         }
     },
 );
+
+ClassProcessor.createNormal(
+    "direction-",
+    (className: string, _, stripStart) => {
+        let stripped = stripStart(className);
+        return [ "direction", stripped === 'vertical' ? Enum.FillDirection.Vertical : Enum.FillDirection.Horizontal ];
+    },
+    [ ObjectType.Div ]
+)
 
 ClassProcessor.createNormal(
     "border-",
@@ -201,18 +303,75 @@ ClassProcessor.createNormal(
             return [ "border-width", stripped];
         }
     },
-    [ ObjectType.Div ],
+    [ ObjectType.Div, ObjectType.Span ],
     (properties, getValue) => {
-        const flex = getValue<Color3>("border");
+        const border = getValue<Color3>("border");
         const borderWidth = getValue<number>("border-width") ?? 0;
 
-        if (!flex) return properties;
+        if (!(border || borderWidth)) return properties;
         return {
             ...properties,
+            BorderSizePixel: 0,
             CHILDREN: [
                 <uistroke
-                    Color={flex}
+                    Color={border ?? new Color3(80,80,255)}
                     Thickness={borderWidth}
+                />
+            ]
+        }
+    },
+);
+
+// padding is processed such that:
+// if 1 _ _ _ is specified, we do 1 on every side,
+// if 1 2 _ _ is specified, we do 1 on every horizontal side, and 2 on every vertical side,
+// if 1 2 3 _ is specified, we do 1 on every horizontal side, and 2 on every vertical side,
+// if 1 2 3 4 is specified, we do 1, 2, 3, and 4 on every side starting from left to top to bottom to right.
+ClassProcessor.createNormal(
+    "padding-",
+    (className: string, parseMe, stripStart) => {
+        let stripped = parseMe(stripStart(className));
+        
+        return [ "padding", stripped ];
+    },
+    [ ObjectType.Div ],
+    (properties, getValue) => {
+        let padding = getValue<string>("padding").split("-");
+
+        let count = padding.size();
+
+        let paddingLeft: UDim;
+        let paddingTop: UDim;
+        let paddingBottom: UDim;
+        let paddingRight: UDim;
+
+        if (count === 1) {
+            padding = [ padding[0], padding[0], padding[0], padding[0] ];
+        } else if (count === 2 || count === 3) {
+            padding = [ padding[0], padding[1], padding[1], padding[0] ];
+        } else if (count < 1 || count > 4) {
+            warn("Too many or too few padding arguments provided, always have between 1 and 4.");
+            return properties;
+        }
+
+        let isLPadPercent = isPercentage(padding[0]);
+        paddingLeft = new UDim(isLPadPercent ? (tonumber(padding[0]) ?? 0) / 100 : 0, isLPadPercent ? 0 : tonumber(padding[0]));
+        let isTPadPercent = isPercentage(padding[0]);
+        paddingTop = new UDim(isTPadPercent ? (tonumber(padding[1]) ?? 0) / 100 : 0, isTPadPercent ? 0 : tonumber(padding[1]));
+        let isBPadPercent = isPercentage(padding[0]);
+        paddingBottom = new UDim(isBPadPercent ? (tonumber(padding[2]) ?? 0) / 100 : 0, isBPadPercent ? 0 : tonumber(padding[2]));
+        let isRPadPercent = isPercentage(padding[0]);
+        paddingRight = new UDim(isRPadPercent ? (tonumber(padding[3]) ?? 0) / 100 : 0, isRPadPercent ? 0 : tonumber(padding[3]));
+
+        return {
+            ...properties,
+            BorderSizePixel: 0,
+            CHILDREN: [
+                <uipadding
+                    PaddingLeft={paddingLeft}
+                    PaddingTop={paddingTop}
+                    PaddingBottom={paddingBottom}
+                    PaddingRight={paddingRight}
                 />
             ]
         }

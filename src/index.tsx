@@ -1,3 +1,3 @@
-import './classes/span';
+import "./classes/span";
 
-export { Div, Span, Button } from './components';
+export { Div, Span, Button } from "./components";

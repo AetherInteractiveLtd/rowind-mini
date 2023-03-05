@@ -147,24 +147,11 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-								InputBegan: (_, input) => {
-									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-										this.props.mouseDown?.(input);
-										if (this.props.mouseUp) {
-											let myConnection: RBXScriptConnection;
-											myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(
-												() => {
-													this.props.mouseUp?.(input);
-													myConnection.Disconnect();
-												},
-											);
-										}
-									}
+								MouseButton1Down: (_, input) => {
+									this.props.mouseDown?.(undefined!); // TODO: Rethink this.
 								},
-								InputEnded: (_, input) => {
-									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-										this.props.mouseUp?.(input);
-									}
+								MouseButton1Up: (_, input) => {
+									this.props.mouseUp?.(undefined!); // TODO: Rethink this.
 								},
 							}}
 							Text={this.props.Text ?? ""}
@@ -182,24 +169,11 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-								InputBegan: (_, input) => {
-									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-										this.props.mouseDown?.(input);
-										if (this.props.mouseUp) {
-											let myConnection: RBXScriptConnection;
-											myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(
-												() => {
-													this.props.mouseUp?.(input);
-													myConnection.Disconnect();
-												},
-											);
-										}
-									}
+								MouseButton1Down: (_, input) => {
+									this.props.mouseDown?.(undefined!); // TODO: Rethink this.
 								},
-								InputEnded: (_, input) => {
-									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-										this.props.mouseUp?.(input);
-									}
+								MouseButton1Up: (_, input) => {
+									this.props.mouseUp?.(undefined!); // TODO: Rethink this.
 								},
 							}}
 							Image={this.props.Image ?? ""}

@@ -139,67 +139,75 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 				);
 			case ObjectType.Button:
 				if (!this.props.Image) {
-					<textbutton
-						Key={this.props.Name}
-						Active={true}
-						{...v.Data}
-						Event={{
-							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-							InputBegan: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseDown?.(input);
-									if (this.props.mouseUp) {
-										let myConnection: RBXScriptConnection;
-										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
-											this.props.mouseUp?.(input);
-											myConnection.Disconnect();
-										});
+					return (
+						<textbutton
+							Key={this.props.Name}
+							Active={true}
+							{...v.Data}
+							Event={{
+								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
+								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+								InputBegan: (_, input) => {
+									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+										this.props.mouseDown?.(input);
+										if (this.props.mouseUp) {
+											let myConnection: RBXScriptConnection;
+											myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(
+												() => {
+													this.props.mouseUp?.(input);
+													myConnection.Disconnect();
+												},
+											);
+										}
 									}
-								}
-							},
-							InputEnded: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseUp?.(input);
-								}
-							},
-						}}
-						Text={this.props.Text ?? ""}
-					>
-						{v.Children}
-						{this.props[Roact.Children]}
-					</textbutton>;
+								},
+								InputEnded: (_, input) => {
+									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+										this.props.mouseUp?.(input);
+									}
+								},
+							}}
+							Text={this.props.Text ?? ""}
+						>
+							{v.Children}
+							{this.props[Roact.Children]}
+						</textbutton>
+					);
 				} else {
-					<imagebutton
-						Key={this.props.Name}
-						Active={true}
-						{...v.Data}
-						Event={{
-							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-							InputBegan: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseDown?.(input);
-									if (this.props.mouseUp) {
-										let myConnection: RBXScriptConnection;
-										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
-											this.props.mouseUp?.(input);
-											myConnection.Disconnect();
-										});
+					return (
+						<imagebutton
+							Key={this.props.Name}
+							Active={true}
+							{...v.Data}
+							Event={{
+								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
+								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+								InputBegan: (_, input) => {
+									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+										this.props.mouseDown?.(input);
+										if (this.props.mouseUp) {
+											let myConnection: RBXScriptConnection;
+											myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(
+												() => {
+													this.props.mouseUp?.(input);
+													myConnection.Disconnect();
+												},
+											);
+										}
 									}
-								}
-							},
-							InputEnded: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseUp?.(input);
-								}
-							},
-						}}
-						Image={this.props.Image ?? ""}
-					>
-						{v.Children}
-						{this.props[Roact.Children]}
-					</imagebutton>;
+								},
+								InputEnded: (_, input) => {
+									if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+										this.props.mouseUp?.(input);
+									}
+								},
+							}}
+							Image={this.props.Image ?? ""}
+						>
+							{v.Children}
+							{this.props[Roact.Children]}
+						</imagebutton>
+					);
 				}
 		}
 	}

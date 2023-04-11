@@ -83,11 +83,18 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
 							InputBegan: (_, input) => {
 								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseDown?.(input);
+									this.setActive(ApplyUpdate.Focus, this.animationLength);
+									try {
+										this.props.mouseDown?.(input);
+									} catch (e) {
+										warn(e);
+									}
 									if (this.props.mouseUp) {
 										let myConnection: RBXScriptConnection;
 										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
 											this.props.mouseUp?.(input);
+											this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
 											myConnection.Disconnect();
 										});
 									}
@@ -95,6 +102,8 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							},
 							InputEnded: (_, input) => {
 								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+									this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
 									this.props.mouseUp?.(input);
 								}
 							},
@@ -115,11 +124,18 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
 							InputBegan: (_, input) => {
 								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.props.mouseDown?.(input);
+									this.setActive(ApplyUpdate.Focus, this.animationLength);
+									try {
+										this.props.mouseDown?.(input);
+									} catch (e) {
+										warn(e);
+									}
 									if (this.props.mouseUp) {
 										let myConnection: RBXScriptConnection;
 										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
 											this.props.mouseUp?.(input);
+											this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
 											myConnection.Disconnect();
 										});
 									}
@@ -127,6 +143,8 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							},
 							InputEnded: (_, input) => {
 								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+									this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
 									this.props.mouseUp?.(input);
 								}
 							},
@@ -148,10 +166,22 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
 								MouseButton1Down: (_, input) => {
-									this.props.mouseDown?.(undefined!); // TODO: Rethink this.
+									try {
+										this.props.mouseDown?.(undefined!);
+									} catch (e) {
+										warn(e);
+									}
+
+									this.setActive(ApplyUpdate.Focus, this.animationLength);
 								},
 								MouseButton1Up: (_, input) => {
-									this.props.mouseUp?.(undefined!); // TODO: Rethink this.
+									try {
+										this.props.mouseUp?.(undefined!);
+									} catch (e) {
+										warn(e);
+									}
+
+									this.setInactive(ApplyUpdate.Focus, this.animationLength);
 								},
 							}}
 							Text={this.props.Text ?? ""}
@@ -170,10 +200,22 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
 								MouseButton1Down: (_, input) => {
-									this.props.mouseDown?.(undefined!); // TODO: Rethink this.
+									try {
+										this.props.mouseDown?.(undefined!);
+									} catch (e) {
+										warn(e);
+									}
+
+									this.setActive(ApplyUpdate.Focus, this.animationLength);
 								},
 								MouseButton1Up: (_, input) => {
-									this.props.mouseUp?.(undefined!); // TODO: Rethink this.
+									try {
+										this.props.mouseUp?.(undefined!);
+									} catch (e) {
+										warn(e);
+									}
+
+									this.setInactive(ApplyUpdate.Focus, this.animationLength);
 								},
 							}}
 							Image={this.props.Image ?? ""}

@@ -223,6 +223,21 @@ ClassProcessor.createNormal(
 );
 
 ClassProcessor.createNormal(
+	"rotation-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		return ["rotation", parseMe(stripped)];
+	},
+	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	(properties, getValue) => {
+		return {
+			...properties,
+			Rotation: getValue<number>("rotation"),
+		};
+	},
+);
+
+ClassProcessor.createNormal(
 	"rounded-",
 	(className: string, parseMe, stripStart) => {
 		const stripped = stripStart(className);

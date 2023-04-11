@@ -206,6 +206,23 @@ ClassProcessor.createNormal(
 );
 
 ClassProcessor.createNormal(
+	"aspect-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		return ["aspectratio", parseMe(stripped)];
+	},
+	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	(properties, getValue) => {
+		return {
+			...properties,
+			CHILDREN: [
+				<uiaspectratioconstraint AspectRatio={getValue<number>("aspectratio") ?? 1}></uiaspectratioconstraint>,
+			],
+		};
+	},
+);
+
+ClassProcessor.createNormal(
 	"rounded-",
 	(className: string, parseMe, stripStart) => {
 		const stripped = stripStart(className);

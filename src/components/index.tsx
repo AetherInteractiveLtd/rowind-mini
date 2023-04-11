@@ -161,6 +161,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						<textbutton
 							Key={this.props.Name}
 							Active={true}
+							AutoButtonColor={false}
 							{...v.Data}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
@@ -195,6 +196,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						<imagebutton
 							Key={this.props.Name}
 							Active={true}
+							AutoButtonColor={false}
 							{...v.Data}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),

@@ -40,34 +40,45 @@ interface RowindComponentProps<T extends ObjectType> {
 	Name: string | number;
 }
 
+let nextAvailable = 0;
+const stateForNamedComponent = new Map<string | number, ActiveStates>();
+
 class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 	PropsWithEventsAndChildren<RowindComponentProps<T>>,
-	{ activeState: ActiveStates }
+	{}
 > {
 	protected neededFrames = 0;
 
 	private animationLength = 10;
+	private myStateKey: string | number;
 
-	constructor(props: { flavour: T } & PropsWithEventsAndChildren<RowindComponentProps<T>>) {
+	constructor(
+		props: { flavour: T; state_key?: number | string } & PropsWithEventsAndChildren<RowindComponentProps<T>>,
+	) {
 		super(props);
 
-		this.state = { activeState: {} as ActiveStates };
+		this.myStateKey = props.state_key ?? ++nextAvailable;
 
-		const active: ActiveStates = this.state.activeState;
+		stateForNamedComponent.set(
+			this.myStateKey,
+			stateForNamedComponent.get(this.myStateKey) ?? {
+				hover: 0,
+				focus: 0,
+				selected: 0,
+				dark: 1,
+				light: 0,
+				motion: 0,
+				colorblind: 0,
+			},
+		);
+	}
 
-		// TODO: find a better way of doing this.
-
-		active.hover = 0;
-		active.focus = 0;
-		active.selected = 0;
-		active.dark = 1;
-		active.light = 0;
-		active.motion = 0;
-		active.colorblind = 0;
+	public getActiveState() {
+		return stateForNamedComponent.get(this.myStateKey)!;
 	}
 
 	public render(): Roact.Element | undefined {
-		const v = RowindClassEngine.gatherProperties(this.props.className, this.props.flavour, this.state.activeState);
+		const v = RowindClassEngine.gatherProperties(this.props.className, this.props.flavour, this.getActiveState());
 
 		this.animationLength = (v.UnprocessedData.data["animation-length"] as number) ?? 10;
 
@@ -258,8 +269,8 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 		this.connection = RunService.RenderStepped.Connect(() => {
 			if (this.ticks >= 0) {
 				this.handleStates();
+				this.ticks -= 1;
 			}
-			this.ticks -= 1;
 		});
 	}
 
@@ -268,7 +279,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 	}
 
 	public handleStates() {
-		changeActive(this.state.activeState, this.animationLength, this.activeUpdates);
+		changeActive(this.getActiveState(), this.animationLength, this.activeUpdates);
 		this.setState(this.state);
 	}
 }
@@ -281,11 +292,12 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 type PropsWithEventsAndChildren<X> = PropsWithChildren<X> & {
 	mouseDown?: (input: InputObject) => void;
 	mouseUp?: (input: InputObject) => void;
+	Key?: string | number;
 };
 
 let _counter = 0;
 
-export function Div(props: PropsWithEventsAndChildren<{ className: string; Key?: string | number }>) {
+export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }>) {
 	return (
 		<WorseRowindComponent
 			Name={props.Key ?? _counter++}
@@ -293,13 +305,14 @@ export function Div(props: PropsWithEventsAndChildren<{ className: string; Key?:
 			mouseDown={props.mouseDown}
 			flavour={ObjectType.Div}
 			className={props.className}
+			state_key={props.Id}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
 	);
 }
 
-export function Span(props: PropsWithEventsAndChildren<{ className: string; Key?: string | number; Text: string }>) {
+export function Span(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text: string }>) {
 	return (
 		<WorseRowindComponent
 			Name={props.Key ?? _counter++}
@@ -308,6 +321,7 @@ export function Span(props: PropsWithEventsAndChildren<{ className: string; Key?
 			flavour={ObjectType.Span}
 			className={props.className}
 			Text={props.Text}
+			state_key={props.Id}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -315,7 +329,7 @@ export function Span(props: PropsWithEventsAndChildren<{ className: string; Key?
 }
 
 export function Button(
-	props: PropsWithEventsAndChildren<{ className: string; Key?: string | number; Text?: string; Image?: string }>,
+	props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text?: string; Image?: string }>,
 ) {
 	return (
 		<WorseRowindComponent
@@ -326,6 +340,7 @@ export function Button(
 			className={props.className}
 			Text={props.Text}
 			Image={props.Image}
+			state_key={props.Id}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>

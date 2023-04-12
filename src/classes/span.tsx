@@ -284,6 +284,41 @@ ClassProcessor.createNormal(
 );
 
 ClassProcessor.createNormal(
+	"cellw-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		if (isPercentage(stripped)) {
+			return ["cellw-scale", parseMe(stripped)];
+		} else {
+			return ["cellw-offset", parseMe(stripped)];
+		}
+	},
+	[ObjectType.Div],
+);
+
+ClassProcessor.createNormal(
+	"cellh-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		if (isPercentage(stripped)) {
+			return ["cellh-scale", parseMe(stripped)];
+		} else {
+			return ["cellh-offset", parseMe(stripped)];
+		}
+	},
+	[ObjectType.Div],
+);
+
+ClassProcessor.createNormal(
+	"maxlinesize-",
+	(className: string, _, stripStart) => {
+		const stripped = stripStart(className);
+		return ["maxlinesize", stripped];
+	},
+	[ObjectType.Div],
+);
+
+ClassProcessor.createNormal(
 	"flex-",
 	(className: string, _, stripStart) => {
 		const stripped = stripStart(className);
@@ -328,11 +363,27 @@ ClassProcessor.createNormal(
 		return {
 			...properties,
 			CHILDREN: [
-				<uilistlayout
+				<uigridlayout
 					FillDirection={getValue<Enum.FillDirection>("direction") ?? Enum.FillDirection.Vertical}
 					HorizontalAlignment={mapFlexJustifiers(flex.size() > 1 ? flex.split("-")[0] : flex, "horizontal")}
 					VerticalAlignment={mapFlexJustifiers(flex.size() > 1 ? flex.split("-")[1] : flex, "vertical")}
-					Padding={new UDim(getValue<number>("item-offset-scale"), getValue<number>("item-offset"))}
+					CellPadding={
+						new UDim2(
+							(getValue<number>("item-offset-scale") ?? 0) / 100,
+							getValue<number>("item-offset"),
+							(getValue<number>("item-offset-scale") ?? 0) / 100,
+							getValue<number>("item-offset"),
+						)
+					}
+					CellSize={
+						new UDim2(
+							(getValue<number>("cellw-scale") ?? 0) / 100,
+							getValue<number>("cellw-offset") ?? 100,
+							(getValue<number>("cellh-scale") ?? 0) / 100,
+							getValue<number>("cellh-offset") ?? 100,
+						)
+					}
+					FillDirectionMaxCells={getValue<number>("maxlinesize") ?? 0}
 				/>,
 			],
 		};

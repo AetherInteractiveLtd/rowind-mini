@@ -140,11 +140,45 @@ export class RowindClassEngine {
 		return valStr;
 	}
 
-	static gatherProperties(className: string, objectType: ObjectType, state: ActiveStates) {
+	static gatherProperties(
+		className: string,
+		objectType: ObjectType,
+		state: ActiveStates,
+		secondaryClassName: string,
+		secondaryAlpha: number,
+	) {
 		const dataObject = this.gatherDatapoints(className, objectType, state);
+		const secondDataObject: {
+			data: {
+				[key: string]: unknown;
+			};
+			usedClasses: Set<RowindClassMap<never>>;
+		} =
+			secondaryClassName.size() > 0
+				? this.gatherDatapoints(secondaryClassName, objectType, state)
+				: ({} as {
+						data: {
+							[key: string]: unknown;
+						};
+						usedClasses: Set<RowindClassMap<never>>;
+				  });
 
 		let finalDataObject: { [key: string]: unknown } = {};
 		let childrenArray: Roact.Element[] = [];
+
+		for (const key of Object.keys(secondDataObject.data ?? [])) {
+			if (key in dataObject.data) {
+				const v = lerpAnything(
+					dataObject.data[key] as number,
+					secondDataObject.data[key] as number,
+					secondaryAlpha,
+				);
+
+				dataObject.data[key] = v;
+			} else {
+				dataObject.data[key] = secondDataObject.data[key];
+			}
+		}
 
 		dataObject.usedClasses.forEach((v) => {
 			if (!v.applyProperties) return;

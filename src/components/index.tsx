@@ -32,12 +32,28 @@ function changeActive(states: ActiveStates, transitionTicks: number, active: App
 	}
 }
 
+export enum FXType {
+	Animate_ClassBased,
+	Animate_ProcessorBased,
+	Processor,
+	Loop_ClassBased,
+	Loop_ProcessorBased,
+}
+
+export interface IEffect {
+	fxType: FXType;
+	processor?: (props: { [key: string]: unknown }) => { [key: string]: unknown };
+	frameBorrow?: number;
+	className?: string;
+}
+
 interface RowindComponentProps<T extends ObjectType> {
 	flavour: T;
 	Text?: string;
 	Image?: string;
 	className: string;
 	Name: string | number;
+	Effects: IEffect[];
 }
 
 let nextAvailable = 0;
@@ -51,6 +67,10 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 
 	private animationLength = 10;
 	private myStateKey: string | number;
+	private classNameForEffects?: string;
+	private alphaForEffects?: number;
+	private maxEffectAlpha?: number;
+	private preApplyProcessors: ((props: { [key: string]: unknown }) => { [key: string]: unknown })[] = [];
 
 	constructor(
 		props: { flavour: T; state_key?: number | string } & PropsWithEventsAndChildren<RowindComponentProps<T>>,
@@ -71,6 +91,32 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 				colorblind: 0,
 			},
 		);
+
+		for (const effect of props.Effects) {
+			switch (effect.fxType) {
+				case FXType.Animate_ClassBased:
+					if (this.classNameForEffects) {
+						warn(
+							"You've added more than 1 class-based effect, please only use 1. We are using the first we received.",
+						);
+						break;
+					}
+					this.classNameForEffects = effect.className!;
+					this.alphaForEffects = effect.frameBorrow;
+					this.maxEffectAlpha = effect.frameBorrow;
+					this.setTransition(effect.frameBorrow!);
+					break;
+				case FXType.Animate_ProcessorBased:
+					this.setTransition(effect.frameBorrow!);
+					this.alphaForEffects = effect.frameBorrow;
+					this.maxEffectAlpha = effect.frameBorrow;
+					this.preApplyProcessors.push(effect.processor!);
+					break;
+				case FXType.Processor:
+					this.preApplyProcessors.push(effect.processor!);
+					this;
+			}
+		}
 	}
 
 	public getActiveState() {
@@ -78,7 +124,17 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 	}
 
 	public render(): Roact.Element | undefined {
-		const v = RowindClassEngine.gatherProperties(this.props.className, this.props.flavour, this.getActiveState());
+		const v = RowindClassEngine.gatherProperties(
+			this.props.className,
+			this.props.flavour,
+			this.getActiveState(),
+			this.classNameForEffects ?? "",
+			1 - (this.alphaForEffects ?? 0) / (this.maxEffectAlpha ?? 0),
+		);
+
+		for (const processor of this.preApplyProcessors) {
+			v.Data = processor(v.Data) ?? v.Data;
+		}
 
 		this.animationLength = (v.UnprocessedData.data["animation-length"] as number) ?? 10;
 
@@ -257,7 +313,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 
 	public ticks = 0;
 	public setTransition(ticks: number) {
-		this.ticks = ticks;
+		this.ticks = math.max(ticks, this.ticks);
 	}
 
 	public didMount(): void {
@@ -271,6 +327,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 				this.handleStates();
 				this.ticks -= 1;
 			}
+			this.alphaForEffects = math.max(0, (this.alphaForEffects ?? 0) - 1);
 		});
 	}
 
@@ -293,6 +350,7 @@ type PropsWithEventsAndChildren<X> = PropsWithChildren<X> & {
 	mouseDown?: (input: InputObject) => void;
 	mouseUp?: (input: InputObject) => void;
 	Key?: string | number;
+	Effects?: IEffect[];
 };
 
 let _counter = 0;
@@ -306,6 +364,7 @@ export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: 
 			flavour={ObjectType.Div}
 			className={props.className}
 			state_key={props.Id}
+			Effects={props.Effects ?? []}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -322,6 +381,7 @@ export function Span(props: PropsWithEventsAndChildren<{ className: string; Id?:
 			className={props.className}
 			Text={props.Text}
 			state_key={props.Id}
+			Effects={props.Effects ?? []}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -341,6 +401,7 @@ export function Button(
 			Text={props.Text}
 			Image={props.Image}
 			state_key={props.Id}
+			Effects={props.Effects ?? []}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>

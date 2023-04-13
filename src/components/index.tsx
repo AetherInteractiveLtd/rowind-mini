@@ -91,32 +91,6 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 				colorblind: 0,
 			},
 		);
-
-		for (const effect of props.Effects) {
-			switch (effect.fxType) {
-				case FXType.Animate_ClassBased:
-					if (this.classNameForEffects) {
-						warn(
-							"You've added more than 1 class-based effect, please only use 1. We are using the first we received.",
-						);
-						break;
-					}
-					this.classNameForEffects = effect.className!;
-					this.alphaForEffects = effect.frameBorrow;
-					this.maxEffectAlpha = effect.frameBorrow;
-					this.setTransition(effect.frameBorrow!);
-					break;
-				case FXType.Animate_ProcessorBased:
-					this.setTransition(effect.frameBorrow!);
-					this.alphaForEffects = effect.frameBorrow;
-					this.maxEffectAlpha = effect.frameBorrow;
-					this.preApplyProcessors.push(effect.processor!);
-					break;
-				case FXType.Processor:
-					this.preApplyProcessors.push(effect.processor!);
-					this;
-			}
-		}
 	}
 
 	public getActiveState() {
@@ -124,12 +98,34 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 	}
 
 	public render(): Roact.Element | undefined {
+		for (const effect of this.props.Effects) {
+			switch (effect.fxType) {
+				case FXType.Animate_ClassBased:
+					this.classNameForEffects = effect.className!;
+					effect.frameBorrow = effect.frameBorrow! - 1;
+					this.maxEffectAlpha = math.max(effect.frameBorrow, this.maxEffectAlpha ?? 0);
+					this.alphaForEffects = effect.frameBorrow;
+					this.setTransition(effect.frameBorrow!);
+					break;
+				case FXType.Animate_ProcessorBased:
+					effect.frameBorrow = effect.frameBorrow! - 1;
+					this.maxEffectAlpha = math.max(effect.frameBorrow, this.maxEffectAlpha ?? 0);
+					this.alphaForEffects = effect.frameBorrow;
+					this.preApplyProcessors.push(effect.processor!);
+					this.setTransition(effect.frameBorrow!);
+					break;
+				case FXType.Processor:
+					this.preApplyProcessors.push(effect.processor!);
+					this;
+			}
+		}
+
 		const v = RowindClassEngine.gatherProperties(
 			this.props.className,
 			this.props.flavour,
 			this.getActiveState(),
 			this.classNameForEffects ?? "",
-			1 - (this.alphaForEffects ?? 0) / (this.maxEffectAlpha ?? 0),
+			1 - (this.alphaForEffects ?? 0) / (this.maxEffectAlpha ?? 1),
 		);
 
 		for (const processor of this.preApplyProcessors) {
@@ -329,7 +325,6 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 			}
 
 			if (this.alphaForEffects && this.alphaForEffects >= 0) {
-				this.alphaForEffects -= 1;
 				this.setState({});
 			}
 		});

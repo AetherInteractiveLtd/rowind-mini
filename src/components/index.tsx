@@ -329,7 +329,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 			}
 
 			if (this.alphaForEffects && this.alphaForEffects >= 0) {
-				this.alphaForEffects -= 0;
+				this.alphaForEffects -= 1;
 				this.setState({});
 			}
 		});

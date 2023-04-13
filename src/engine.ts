@@ -167,6 +167,7 @@ export class RowindClassEngine {
 		let childrenArray: Roact.Element[] = [];
 
 		for (const key of Object.keys(secondDataObject.data ?? [])) {
+			let newData;
 			if (key in dataObject.data) {
 				const v = lerpAnything(
 					dataObject.data[key] as number,
@@ -174,10 +175,22 @@ export class RowindClassEngine {
 					secondaryAlpha,
 				);
 
-				dataObject.data[key] = v;
+				newData = v;
 			} else {
-				dataObject.data[key] = secondDataObject.data[key];
+				newData = secondDataObject.data[key];
 			}
+			print(
+				"Changed data for key",
+				key,
+				"from",
+				dataObject.data[key],
+				"and",
+				secondDataObject.data[key],
+				"to",
+				newData,
+				`(${secondaryAlpha})`,
+			);
+			dataObject.data[key] = newData;
 		}
 
 		dataObject.usedClasses.forEach((v) => {

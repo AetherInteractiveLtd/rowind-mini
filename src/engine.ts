@@ -179,17 +179,7 @@ export class RowindClassEngine {
 			} else {
 				newData = secondDataObject.data[key];
 			}
-			print(
-				"Changed data for key",
-				key,
-				"from",
-				dataObject.data[key],
-				"and",
-				secondDataObject.data[key],
-				"to",
-				newData,
-				`(${secondaryAlpha})`,
-			);
+
 			dataObject.data[key] = newData;
 		}
 

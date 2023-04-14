@@ -15,6 +15,7 @@ export enum ObjectType {
 	Button,
 	Input,
 	Div,
+	CanvasDiv,
 	Span,
 }
 

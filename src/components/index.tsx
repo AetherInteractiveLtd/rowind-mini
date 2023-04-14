@@ -102,13 +102,13 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 			switch (effect.fxType) {
 				case FXType.Animate_ClassBased:
 					this.classNameForEffects = effect.className!;
-					effect.frameBorrow = effect.frameBorrow! - 1;
+					effect.frameBorrow = math.max(0, effect.frameBorrow! - 1);
 					this.maxEffectAlpha = math.max(effect.frameBorrow, this.maxEffectAlpha ?? 0);
 					this.alphaForEffects = effect.frameBorrow;
 					this.setTransition(effect.frameBorrow!);
 					break;
 				case FXType.Animate_ProcessorBased:
-					effect.frameBorrow = effect.frameBorrow! - 1;
+					effect.frameBorrow = math.max(0, effect.frameBorrow! - 1);
 					this.maxEffectAlpha = math.max(effect.frameBorrow, this.maxEffectAlpha ?? 0);
 					this.alphaForEffects = effect.frameBorrow;
 					this.preApplyProcessors.push(effect.processor!);
@@ -175,6 +175,47 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						{v.Children}
 						{this.props[Roact.Children]}
 					</frame>
+				);
+			case ObjectType.CanvasDiv:
+				return (
+					<canvasgroup
+						Key={this.props.Name}
+						Active={true}
+						{...v.Data}
+						Event={{
+							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
+							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
+							InputBegan: (_, input) => {
+								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+									this.setActive(ApplyUpdate.Focus, this.animationLength);
+									try {
+										this.props.mouseDown?.(input);
+									} catch (e) {
+										warn(e);
+									}
+									if (this.props.mouseUp) {
+										let myConnection: RBXScriptConnection;
+										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
+											this.props.mouseUp?.(input);
+											this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
+											myConnection.Disconnect();
+										});
+									}
+								}
+							},
+							InputEnded: (_, input) => {
+								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+									this.setInactive(ApplyUpdate.Focus, this.animationLength);
+
+									this.props.mouseUp?.(input);
+								}
+							},
+						}}
+					>
+						{v.Children}
+						{this.props[Roact.Children]}
+					</canvasgroup>
 				);
 			case ObjectType.Span:
 				return (
@@ -361,6 +402,22 @@ export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: 
 			mouseUp={props.mouseUp}
 			mouseDown={props.mouseDown}
 			flavour={ObjectType.Div}
+			className={props.className}
+			state_key={props.Id}
+			Effects={props.Effects ?? []}
+		>
+			{props[Roact.Children]}
+		</WorseRowindComponent>
+	);
+}
+
+export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }>) {
+	return (
+		<WorseRowindComponent
+			Name={props.Key ?? _counter++}
+			mouseUp={props.mouseUp}
+			mouseDown={props.mouseDown}
+			flavour={ObjectType.CanvasDiv}
 			className={props.className}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}

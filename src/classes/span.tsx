@@ -7,7 +7,7 @@ ClassProcessor.createSpecial(
 	() => {
 		return ["transparent", true];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return { ...properties, BackgroundTransparency: getValue<boolean>("transparent") === true ? 1 : 0 };
 	},
@@ -29,7 +29,7 @@ ClassProcessor.createSpecial(
 	() => {
 		return ["clip", true];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return { ...properties, ClipsDescendants: getValue<boolean>("clip") };
 	},
@@ -46,7 +46,7 @@ ClassProcessor.createNormal(
 			return ["bgcol", v];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return {
 			...properties,
@@ -74,7 +74,7 @@ ClassProcessor.createNormal(
 				: Enum.TextXAlignment.Right,
 		];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );
 
 ClassProcessor.createNormal(
@@ -126,7 +126,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["animation-length", parseMe(stripped)];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );
 
 function isPercentage(str: string) {
@@ -146,7 +146,7 @@ ClassProcessor.createNormal(
 			return ["x", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );
 
 ClassProcessor.createNormal(
@@ -159,7 +159,7 @@ ClassProcessor.createNormal(
 			return ["y", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );
 
 ClassProcessor.createNormal(
@@ -172,7 +172,7 @@ ClassProcessor.createNormal(
 			return ["width", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );
 
 ClassProcessor.createNormal(
@@ -185,7 +185,7 @@ ClassProcessor.createNormal(
 			return ["height", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return {
 			...properties,
@@ -211,7 +211,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["aspectratio", parseMe(stripped)];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return {
 			...properties,
@@ -228,11 +228,26 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["rotation", parseMe(stripped)];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return {
 			...properties,
 			Rotation: getValue<number>("rotation"),
+		};
+	},
+);
+
+ClassProcessor.createNormal(
+	"transparency-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		return ["gtransparency", parseMe(stripped)];
+	},
+	[ObjectType.CanvasDiv],
+	(properties, getValue) => {
+		return {
+			...properties,
+			GroupTransparency: getValue<number>("gtransparency"),
 		};
 	},
 );
@@ -243,7 +258,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["rounded", parseMe(stripped)];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		const vRounded = getValue<number>("rounded");
 
@@ -265,7 +280,7 @@ ClassProcessor.createNormal(
 			return ["item-offset", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 );
 
 ClassProcessor.createNormal(
@@ -274,7 +289,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className).split("-");
 		return ["anchor", new Vector2((parseMe(stripped[0]) as number) ?? 0, (parseMe(stripped[1]) as number) ?? 0)];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return {
 			...properties,
@@ -293,7 +308,7 @@ ClassProcessor.createNormal(
 			return ["cellw-offset", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 );
 
 ClassProcessor.createNormal(
@@ -306,7 +321,7 @@ ClassProcessor.createNormal(
 			return ["cellh-offset", parseMe(stripped)];
 		}
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 );
 
 ClassProcessor.createNormal(
@@ -315,7 +330,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["maxlinesize", stripped];
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 );
 
 ClassProcessor.createNormal(
@@ -324,7 +339,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["flex", stripped];
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 	(properties, getValue) => {
 		const flex = getValue<string>("flex");
 
@@ -396,7 +411,7 @@ ClassProcessor.createNormal(
 		const stripped = stripStart(className);
 		return ["direction", stripped === "vertical" ? Enum.FillDirection.Vertical : Enum.FillDirection.Horizontal];
 	},
-	[ObjectType.Div],
+	[ObjectType.Div, ObjectType.CanvasDiv],
 );
 
 ClassProcessor.createNormal(
@@ -410,7 +425,7 @@ ClassProcessor.createNormal(
 			return ["border-width", stripped];
 		}
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		const border = getValue<Color3>("border");
 		const borderWidth = getValue<number>("border-width") ?? 0;
@@ -442,7 +457,7 @@ ClassProcessor.createNormal(
 
 		return ["padding", stripped];
 	},
-	[ObjectType.Div, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		let padding = getValue<string>("padding").split("-");
 

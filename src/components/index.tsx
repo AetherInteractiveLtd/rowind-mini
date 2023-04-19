@@ -59,8 +59,8 @@ interface RowindComponentProps<T extends ObjectType> {
 let nextAvailable = 0;
 const stateForNamedComponent = new Map<string | number, ActiveStates>();
 
-class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
-	PropsWithEventsAndChildren<RowindComponentProps<T>>,
+class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roact.Component<
+	PropsWithEventsAndChildren<RowindComponentProps<T>, I>,
 	{}
 > {
 	protected neededFrames = 0;
@@ -73,7 +73,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 	private preApplyProcessors: ((props: { [key: string]: unknown }) => { [key: string]: unknown })[] = [];
 
 	constructor(
-		props: { flavour: T; state_key?: number | string } & PropsWithEventsAndChildren<RowindComponentProps<T>>,
+		props: { flavour: T; state_key?: number | string } & PropsWithEventsAndChildren<RowindComponentProps<T>, I>,
 	) {
 		super(props);
 
@@ -141,6 +141,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
+						{...(this.props.Props as never[])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -182,6 +183,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
+						{...(this.props.Props as never[])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -223,6 +225,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
+						{...(this.props.Props as never[])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -267,6 +270,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							Active={true}
 							AutoButtonColor={false}
 							{...v.Data}
+							{...(this.props.Props as never[])}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -302,6 +306,7 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 							Active={true}
 							AutoButtonColor={false}
 							{...v.Data}
+							{...(this.props.Props as never[])}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -386,16 +391,17 @@ class WorseRowindComponent<T extends ObjectType> extends Roact.Component<
 // Div,
 // Span,
 
-type PropsWithEventsAndChildren<X> = PropsWithChildren<X> & {
+type PropsWithEventsAndChildren<X, D extends Instance> = PropsWithChildren<X> & {
 	mouseDown?: (input: InputObject) => void;
 	mouseUp?: (input: InputObject) => void;
 	Key?: string | number;
 	Effects?: IEffect[];
+	Props?: Partial<JSX.IntrinsicElement<D>>;
 };
 
 let _counter = 0;
 
-export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }>) {
+export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }, Frame>) {
 	return (
 		<WorseRowindComponent
 			Name={props.Key ?? _counter++}
@@ -405,13 +411,14 @@ export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: 
 			className={props.className}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
+			Props={props.Props}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
 	);
 }
 
-export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }>) {
+export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }, CanvasGroup>) {
 	return (
 		<WorseRowindComponent
 			Name={props.Key ?? _counter++}
@@ -421,13 +428,16 @@ export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string;
 			className={props.className}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
+			Props={props.Props}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
 	);
 }
 
-export function Span(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text: string }>) {
+export function Span(
+	props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text: string }, TextLabel>,
+) {
 	return (
 		<WorseRowindComponent
 			Name={props.Key ?? _counter++}
@@ -438,6 +448,7 @@ export function Span(props: PropsWithEventsAndChildren<{ className: string; Id?:
 			Text={props.Text}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
+			Props={props.Props}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -445,7 +456,10 @@ export function Span(props: PropsWithEventsAndChildren<{ className: string; Id?:
 }
 
 export function Button(
-	props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text?: string; Image?: string }>,
+	props: PropsWithEventsAndChildren<
+		{ className: string; Id?: string | number; Text?: string; Image?: string },
+		TextButton | ImageButton
+	>,
 ) {
 	return (
 		<WorseRowindComponent
@@ -458,6 +472,7 @@ export function Button(
 			Image={props.Image}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
+			Props={props.Props}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>

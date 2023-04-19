@@ -35,6 +35,17 @@ ClassProcessor.createSpecial(
 	},
 );
 
+ClassProcessor.createSpecial(
+	"scaled",
+	() => {
+		return ["scaled", true];
+	},
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	(properties, getValue) => {
+		return { ...properties, TextScaled: getValue<boolean>("scaled") };
+	},
+);
+
 ClassProcessor.createNormal(
 	"bg-",
 	(className: string, parseMe, stripStart) => {
@@ -105,7 +116,6 @@ ClassProcessor.createNormal(
 			FontFace: getValue<Font>("text-font") ?? Font.fromEnum(Enum.Font.Arial),
 			TextColor3: getValue<Color3>("text-color"),
 			TextSize: TextSize ?? 10,
-			TextScaled: !TextSize,
 			TextTruncate: getValue<Enum.TextTruncate>("text-truncate") ?? Enum.TextTruncate.None,
 		};
 	},

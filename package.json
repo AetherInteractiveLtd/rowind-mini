@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/rowind-mini",
-  "version": "1.5.3",
+  "version": "1.5.7-b",
   "description": "",
   "main": "out/init.lua",
   "scripts": {

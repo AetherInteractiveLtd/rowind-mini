@@ -112,6 +112,40 @@ active.light = 0;
 active.motion = 0;
 active.colorblind = 0;
 
+namespace Easings {
+	export function noEase(x: number) {
+		return x;
+	}
+
+	export function inOutSine(x: number): number {
+		return -(math.cos(math.pi * x) - 1) / 2;
+	}
+
+	export function outQuad(x: number): number {
+		return 1 - (1 - x) * (1 - x);
+	}
+
+	export function inQuart(x: number): number {
+		return x * x * x * x;
+	}
+
+	export function inBack(x: number): number {
+		const c1 = 1.70158;
+		const c3 = c1 + 1;
+
+		return c3 * x * x * x - c1 * x * x;
+	}
+
+	export function inOutBack(x: number): number {
+		const c1 = 1.70158;
+		const c2 = c1 * 1.525;
+
+		return x < 0.5
+			? (math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+			: (math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+	}
+}
+
 export class RowindClassEngine {
 	protected static readonly categorizedClassMap: Map<ObjectType, RowindClassMap<never>[]> = new Map();
 
@@ -251,6 +285,8 @@ export class RowindClassEngine {
 
 		const newDataObject: { [key: string]: unknown } = {};
 
+		const easingFunction = Easings[(dataObject["easing-style"]?.[0]?.[0] as keyof typeof Easings) ?? "noEase"];
+
 		for (const key of Object.keys(dataObject)) {
 			const forThisValue = dataObject[key].sort((one, two) => two[1] > one[1]);
 
@@ -263,7 +299,7 @@ export class RowindClassEngine {
 				const v = lerpAnything(
 					deepestWithoutState[0] as number,
 					deepestWithState[0] as number,
-					deepestWithState[2],
+					easingFunction(deepestWithState[2]),
 				);
 
 				newDataObject[key] = v;

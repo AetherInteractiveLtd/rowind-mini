@@ -141,7 +141,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
-						{...(this.props.Props as never[])}
+						{...((this.props.Props as never[]) ?? [])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -183,7 +183,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
-						{...(this.props.Props as never[])}
+						{...((this.props.Props as never[]) ?? [])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -225,7 +225,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
-						{...(this.props.Props as never[])}
+						{...((this.props.Props as never[]) ?? [])}
 						Event={{
 							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -270,7 +270,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 							Active={true}
 							AutoButtonColor={false}
 							{...v.Data}
-							{...(this.props.Props as never[])}
+							{...((this.props.Props as never[]) ?? [])}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
@@ -306,7 +306,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 							Active={true}
 							AutoButtonColor={false}
 							{...v.Data}
-							{...(this.props.Props as never[])}
+							{...((this.props.Props as never[]) ?? [])}
 							Event={{
 								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
 								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),

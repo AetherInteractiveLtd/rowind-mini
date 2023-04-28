@@ -40,7 +40,7 @@ ClassProcessor.createSpecial(
 	() => {
 		return ["scaled", true];
 	},
-	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+	[ObjectType.Input, ObjectType.Span, ObjectType.Button],
 	(properties, getValue) => {
 		return { ...properties, TextScaled: getValue<boolean>("scaled") };
 	},
@@ -135,6 +135,15 @@ ClassProcessor.createNormal(
 	(className: string, parseMe, stripStart) => {
 		const stripped = stripStart(className);
 		return ["animation-length", parseMe(stripped)];
+	},
+	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
+);
+
+ClassProcessor.createNormal(
+	"ease-",
+	(className: string, parseMe, stripStart) => {
+		const stripped = stripStart(className);
+		return ["easing-style", parseMe(stripped)];
 	},
 	[ObjectType.Div, ObjectType.CanvasDiv, ObjectType.Input, ObjectType.Span, ObjectType.Button],
 );

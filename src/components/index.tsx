@@ -59,7 +59,7 @@ interface RowindComponentProps<T extends ObjectType> {
 let nextAvailable = 0;
 const stateForNamedComponent = new Map<string | number, ActiveStates>();
 
-class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roact.Component<
+class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Roact.Component<
 	PropsWithEventsAndChildren<RowindComponentProps<T>, I>,
 	{}
 > {
@@ -91,6 +91,48 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 				colorblind: 0,
 			},
 		);
+
+		this.hookFrameEvents();
+	}
+
+	private hookFrameEvents() {
+		const events = this.props.Events as Roact.JsxInstanceEvents<GuiObject>;
+
+		const mouseEnterSupplied = events.MouseEnter;
+		const mouseLeaveSupplied = events.MouseLeave;
+		const inputBeganSupplied = events.InputBegan;
+		const inputEndedSupplied = events.InputEnded;
+
+		events.MouseEnter = (...args) => {
+			this.setActive(ApplyUpdate.Hover, this.animationLength);
+			mouseEnterSupplied?.(...args);
+		};
+		events.MouseLeave = (...args) => {
+			this.setInactive(ApplyUpdate.Hover, this.animationLength);
+			mouseLeaveSupplied?.(...args);
+		};
+		events.InputBegan = (...args) => {
+			if (args[1].UserInputType === Enum.UserInputType.MouseButton1) {
+				this.setActive(ApplyUpdate.Focus, this.animationLength);
+				try {
+					this.props.mouseDown?.(args[1]);
+				} catch (e) {
+					warn(e);
+				}
+			}
+			inputBeganSupplied?.(...args);
+		};
+		events.InputEnded = (...args) => {
+			if (args[1].UserInputType === Enum.UserInputType.MouseButton1) {
+				this.setInactive(ApplyUpdate.Focus, this.animationLength);
+				try {
+					this.props.mouseUp?.(args[1]);
+				} catch (e) {
+					warn(e);
+				}
+			}
+			inputEndedSupplied?.(...args);
+		};
 	}
 
 	public getActiveState() {
@@ -142,83 +184,26 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 						Active={true}
 						{...v.Data}
 						{...(this.props.Props as never[])}
-						Event={{
-							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-							InputBegan: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setActive(ApplyUpdate.Focus, this.animationLength);
-									try {
-										this.props.mouseDown?.(input);
-									} catch (e) {
-										warn(e);
-									}
-									if (this.props.mouseUp) {
-										let myConnection: RBXScriptConnection;
-										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
-											this.props.mouseUp?.(input);
-											this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-											myConnection.Disconnect();
-										});
-									}
-								}
-							},
-							InputEnded: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-									this.props.mouseUp?.(input);
-								}
-							},
-						}}
+						Event={this.props.Events}
 					>
 						{v.Children}
 						{this.props[Roact.Children]}
 					</frame>
 				);
-			case ObjectType.CanvasDiv:
+			case ObjectType.CanvasDiv: {
 				return (
 					<canvasgroup
 						Key={this.props.Name}
 						Active={true}
 						{...v.Data}
 						{...(this.props.Props as never[])}
-						Event={{
-							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-							InputBegan: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setActive(ApplyUpdate.Focus, this.animationLength);
-									try {
-										this.props.mouseDown?.(input);
-									} catch (e) {
-										warn(e);
-									}
-									if (this.props.mouseUp) {
-										let myConnection: RBXScriptConnection;
-										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
-											this.props.mouseUp?.(input);
-											this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-											myConnection.Disconnect();
-										});
-									}
-								}
-							},
-							InputEnded: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-									this.props.mouseUp?.(input);
-								}
-							},
-						}}
+						Event={this.props.Events}
 					>
 						{v.Children}
 						{this.props[Roact.Children]}
 					</canvasgroup>
 				);
+			}
 			case ObjectType.Span:
 				return (
 					<textlabel
@@ -226,36 +211,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 						Active={true}
 						{...v.Data}
 						{...(this.props.Props as never[])}
-						Event={{
-							MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-							MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-							InputBegan: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setActive(ApplyUpdate.Focus, this.animationLength);
-									try {
-										this.props.mouseDown?.(input);
-									} catch (e) {
-										warn(e);
-									}
-									if (this.props.mouseUp) {
-										let myConnection: RBXScriptConnection;
-										myConnection = (input.Changed as RBXScriptSignal<() => void>).Connect(() => {
-											this.props.mouseUp?.(input);
-											this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-											myConnection.Disconnect();
-										});
-									}
-								}
-							},
-							InputEnded: (_, input) => {
-								if (input.UserInputType === Enum.UserInputType.MouseButton1) {
-									this.setInactive(ApplyUpdate.Focus, this.animationLength);
-
-									this.props.mouseUp?.(input);
-								}
-							},
-						}}
+						Event={this.props.Events}
 						Text={this.props.Text ?? ""}
 					>
 						{v.Children}
@@ -271,28 +227,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 							AutoButtonColor={false}
 							{...v.Data}
 							{...(this.props.Props as never[])}
-							Event={{
-								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-								MouseButton1Down: (_, input) => {
-									try {
-										this.props.mouseDown?.(undefined!);
-									} catch (e) {
-										warn(e);
-									}
-
-									this.setActive(ApplyUpdate.Focus, this.animationLength);
-								},
-								MouseButton1Up: (_, input) => {
-									try {
-										this.props.mouseUp?.(undefined!);
-									} catch (e) {
-										warn(e);
-									}
-
-									this.setInactive(ApplyUpdate.Focus, this.animationLength);
-								},
-							}}
+							Event={this.props.Events}
 							Text={this.props.Text ?? ""}
 						>
 							{v.Children}
@@ -307,28 +242,7 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 							AutoButtonColor={false}
 							{...v.Data}
 							{...(this.props.Props as never[])}
-							Event={{
-								MouseEnter: () => this.setActive(ApplyUpdate.Hover, this.animationLength),
-								MouseLeave: () => this.setInactive(ApplyUpdate.Hover, this.animationLength),
-								MouseButton1Down: (_, input) => {
-									try {
-										this.props.mouseDown?.(undefined!);
-									} catch (e) {
-										warn(e);
-									}
-
-									this.setActive(ApplyUpdate.Focus, this.animationLength);
-								},
-								MouseButton1Up: (_, input) => {
-									try {
-										this.props.mouseUp?.(undefined!);
-									} catch (e) {
-										warn(e);
-									}
-
-									this.setInactive(ApplyUpdate.Focus, this.animationLength);
-								},
-							}}
+							Event={this.props.Events}
 							Image={this.props.Image ?? ""}
 						>
 							{v.Children}
@@ -338,6 +252,15 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 				}
 		}
 	}
+
+	// private mouseDown(input: InputObject) {
+	// 	if (input.UserInputType !== Enum.UserInputType.MouseButton1)
+	// 		try {
+	// 			this.props.mouseDown?.(input);
+	// 		} catch (e) {
+	// 			warn(e);
+	// 		}
+	// }
 
 	public activeUpdates: ApplyUpdate[] = [];
 	public setActive(typ: ApplyUpdate, ticks: number) {
@@ -391,12 +314,13 @@ class WorseRowindComponent<T extends ObjectType, I extends Instance> extends Roa
 // Div,
 // Span,
 
-type PropsWithEventsAndChildren<X, D extends Instance> = PropsWithChildren<X> & {
+type PropsWithEventsAndChildren<X, D extends GuiObject> = PropsWithChildren<X> & {
 	mouseDown?: (input: InputObject) => void;
 	mouseUp?: (input: InputObject) => void;
 	Key?: string | number;
 	Effects?: IEffect[];
 	Props?: Partial<JSX.IntrinsicElement<D>>;
+	Events?: Partial<Roact.JsxInstanceEvents<D>>;
 };
 
 let _counter = 0;
@@ -411,7 +335,8 @@ export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: 
 			className={props.className}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
-			Props={props.Props}
+			Events={props.Events ?? {}}
+			Props={props.Props ?? {}}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -428,7 +353,8 @@ export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string;
 			className={props.className}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
-			Props={props.Props}
+			Events={props.Events ?? {}}
+			Props={props.Props ?? {}}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -448,7 +374,8 @@ export function Span(
 			Text={props.Text}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
-			Props={props.Props}
+			Events={props.Events ?? {}}
+			Props={props.Props ?? {}}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>
@@ -472,7 +399,8 @@ export function Button(
 			Image={props.Image}
 			state_key={props.Id}
 			Effects={props.Effects ?? []}
-			Props={props.Props}
+			Events={props.Events ?? {}}
+			Props={props.Props ?? {}}
 		>
 			{props[Roact.Children]}
 		</WorseRowindComponent>

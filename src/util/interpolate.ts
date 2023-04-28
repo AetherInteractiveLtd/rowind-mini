@@ -1,7 +1,7 @@
 type Interpolatable = Vector2 | Vector3 | Color3 | UDim2 | UDim | number | boolean | EnumItem;
 
-/**
- * This will Lerp literally any Roblox datatype (within reason)
+/*
+   This will Lerp literally any Roblox datatype (within reason)
  */
 export function lerpAnything<T extends Interpolatable>(a: T, b: T, alpha: number): T {
 	if (typeIs(a, "number")) {

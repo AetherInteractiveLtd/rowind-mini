@@ -91,8 +91,6 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 				colorblind: 0,
 			},
 		);
-
-		this.hookFrameEvents();
 	}
 
 	private hookFrameEvents() {
@@ -137,6 +135,10 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 
 	public getActiveState() {
 		return stateForNamedComponent.get(this.myStateKey)!;
+	}
+
+	public didUpdate(previousProps: PropsWithEventsAndChildren<RowindComponentProps<T>, I>, previousState: {}): void {
+		this.hookFrameEvents();
 	}
 
 	public render(): Roact.Element | undefined {

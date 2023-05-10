@@ -91,6 +91,8 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 				colorblind: 0,
 			},
 		);
+
+		this.hookFrameEvents();
 	}
 
 	private hookFrameEvents() {

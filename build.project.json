@@ -1,0 +1,11 @@
+{
+	"name": "rowind-as-rbxm",
+	"globIgnorePaths": [
+		"**/package.json",
+		"**/tsconfig.json"
+	],
+
+	"tree": {
+		"$path": "out"
+	}
+}

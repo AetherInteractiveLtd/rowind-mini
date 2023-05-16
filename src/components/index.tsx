@@ -1,6 +1,6 @@
 /* eslint-disable roblox-ts/lua-truthiness */
 /* eslint-disable prefer-const */
-import Roact, { PropsWithChildren } from "@rbxts/roact";
+import Roact, { Element, Portal, PropsWithChildren } from "@rbxts/roact";
 import { RunService } from "@rbxts/services";
 import { ActiveStates, ObjectType, RowindClassEngine } from "../engine";
 
@@ -47,41 +47,52 @@ export interface IEffect {
 	className?: string;
 }
 
-interface RowindComponentProps<T extends ObjectType> {
-	flavour: T;
+type PropsWithEventsAndChildren<X, I extends GuiObject> = PropsWithChildren<X> & {
+	mouseDown?: (input: InputObject) => void;
+	mouseUp?: (input: InputObject) => void;
+	Key?: string | number;
+	className: string;
+	Effects?: IEffect[];
+	Props?: Partial<JSX.IntrinsicElement<I>>;
+	Events?: Partial<Roact.JsxInstanceEvents<I>>;
+};
+
+interface RowindComponentProps<I extends GuiObject> {
+	flavour: ObjectType;
 	Text?: string;
 	Image?: string;
-	className: string;
-	Name: string | number;
 	Effects: IEffect[];
+	Events: Partial<Roact.JsxInstanceEvents<I>>;
 }
 
-let nextAvailable = 0;
+let stateKeyGlobal = 0;
+
 const stateForNamedComponent = new Map<string | number, ActiveStates>();
 
-class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Roact.Component<
-	PropsWithEventsAndChildren<RowindComponentProps<T>, I>,
+class WorseRowindComponent<I extends GuiObject> extends Roact.Component<
+	PropsWithEventsAndChildren<RowindComponentProps<I>, I>,
 	{}
 > {
 	protected neededFrames = 0;
 
 	private animationLength = 10;
-	private myStateKey: string | number;
 	private classNameForEffects?: string;
 	private alphaForEffects?: number;
 	private maxEffectAlpha?: number;
 	private preApplyProcessors: ((props: { [key: string]: unknown }) => { [key: string]: unknown })[] = [];
 
-	constructor(
-		props: { flavour: T; state_key?: number | string } & PropsWithEventsAndChildren<RowindComponentProps<T>, I>,
-	) {
+	private stateKey: string;
+
+	private roactEvents: Roact.JsxInstanceEvents<I> = {};
+
+	constructor(props: PropsWithEventsAndChildren<RowindComponentProps<I>, I>) {
 		super(props);
 
-		this.myStateKey = props.state_key ?? ++nextAvailable;
+		this.stateKey = tostring(props.Key ?? stateKeyGlobal++);
 
 		stateForNamedComponent.set(
-			this.myStateKey,
-			stateForNamedComponent.get(this.myStateKey) ?? {
+			this.stateKey,
+			stateForNamedComponent.get(this.stateKey) ?? {
 				hover: 0,
 				focus: 0,
 				selected: 0,
@@ -97,21 +108,22 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 
 	private hookFrameEvents() {
 		const events = this.props.Events as Roact.JsxInstanceEvents<GuiObject>;
+		const roactEvents = this.roactEvents as Roact.JsxInstanceEvents<GuiObject>;
 
 		const mouseEnterSupplied = events.MouseEnter;
 		const mouseLeaveSupplied = events.MouseLeave;
 		const inputBeganSupplied = events.InputBegan;
 		const inputEndedSupplied = events.InputEnded;
 
-		events.MouseEnter = (...args) => {
+		roactEvents.MouseEnter = (...args) => {
 			this.setActive(ApplyUpdate.Hover, this.animationLength);
 			mouseEnterSupplied?.(...args);
 		};
-		events.MouseLeave = (...args) => {
+		roactEvents.MouseLeave = (...args) => {
 			this.setInactive(ApplyUpdate.Hover, this.animationLength);
 			mouseLeaveSupplied?.(...args);
 		};
-		events.InputBegan = (...args) => {
+		roactEvents.InputBegan = (...args) => {
 			if (args[1].UserInputType === Enum.UserInputType.MouseButton1) {
 				this.setActive(ApplyUpdate.Focus, this.animationLength);
 				try {
@@ -122,7 +134,7 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 			}
 			inputBeganSupplied?.(...args);
 		};
-		events.InputEnded = (...args) => {
+		roactEvents.InputEnded = (...args) => {
 			if (args[1].UserInputType === Enum.UserInputType.MouseButton1) {
 				this.setInactive(ApplyUpdate.Focus, this.animationLength);
 				try {
@@ -136,10 +148,10 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 	}
 
 	public getActiveState() {
-		return stateForNamedComponent.get(this.myStateKey)!;
+		return stateForNamedComponent.get(this.stateKey)!;
 	}
 
-	public didUpdate(previousProps: PropsWithEventsAndChildren<RowindComponentProps<T>, I>, previousState: {}): void {
+	public didUpdate(previousProps: PropsWithEventsAndChildren<RowindComponentProps<I>, I>, previousState: {}): void {
 		this.hookFrameEvents();
 	}
 
@@ -180,80 +192,72 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 
 		this.animationLength = (v.UnprocessedData.data["animation-length"] as number) ?? 10;
 
+		const children = new Map<string | number, Roact.Element>();
+		let childIndex = 0;
+
+		const attributes: { [index: string | symbol]: unknown } & { AutoButtonColor?: boolean } = {
+			Active: true,
+			Text: this.props.Text,
+			Image: this.props.Image,
+			AutoButtonColor: undefined,
+
+			...v.Data,
+			...this.props.Props,
+
+			[Roact.Children]: children,
+		};
+
+		for (const [event, callback] of pairs(this.roactEvents as Record<string, (...args: unknown[]) => void>)) {
+			attributes[Roact.Event[event]] = callback;
+		}
+
+		for (const element of v.Children) {
+			children.set(childIndex++, element);
+		}
+
+		this.props[Roact.Children]?.forEach((element, key) => {
+			children.set(key, element);
+		});
+
+		let instanceClass: keyof CreatableInstances;
+
 		switch (this.props.flavour) {
-			case ObjectType.Div:
-				return (
-					<frame
-						Key={this.props.Name}
-						Active={true}
-						{...v.Data}
-						{...(this.props.Props as never[])}
-						Event={this.props.Events}
-					>
-						{v.Children}
-						{this.props[Roact.Children]}
-					</frame>
-				);
-			case ObjectType.CanvasDiv: {
-				return (
-					<canvasgroup
-						Key={this.props.Name}
-						Active={true}
-						{...v.Data}
-						{...(this.props.Props as never[])}
-						Event={this.props.Events}
-					>
-						{v.Children}
-						{this.props[Roact.Children]}
-					</canvasgroup>
-				);
+			case ObjectType.Div: {
+				instanceClass = "Frame";
+				break;
 			}
-			case ObjectType.Span:
-				return (
-					<textlabel
-						Key={this.props.Name}
-						Active={true}
-						{...v.Data}
-						{...(this.props.Props as never[])}
-						Event={this.props.Events}
-						Text={this.props.Text ?? ""}
-					>
-						{v.Children}
-						{this.props[Roact.Children]}
-					</textlabel>
-				);
-			case ObjectType.Button:
-				if (!this.props.Image) {
-					return (
-						<textbutton
-							Key={this.props.Name}
-							Active={true}
-							AutoButtonColor={false}
-							{...v.Data}
-							{...(this.props.Props as never[])}
-							Event={this.props.Events}
-							Text={this.props.Text ?? ""}
-						>
-							{v.Children}
-							{this.props[Roact.Children]}
-						</textbutton>
-					);
+			case ObjectType.CanvasDiv: {
+				instanceClass = "CanvasGroup";
+				break;
+			}
+			case ObjectType.Span: {
+				instanceClass = "TextLabel";
+				attributes.Text ||= " ";
+				break;
+			}
+			case ObjectType.Button: {
+				attributes.AutoButtonColor = false;
+
+				if (this.props.Image) {
+					instanceClass = "ImageButton";
 				} else {
-					return (
-						<imagebutton
-							Key={this.props.Name}
-							Active={true}
-							AutoButtonColor={false}
-							{...v.Data}
-							{...(this.props.Props as never[])}
-							Event={this.props.Events}
-							Image={this.props.Image ?? ""}
-						>
-							{v.Children}
-							{this.props[Roact.Children]}
-						</imagebutton>
-					);
+					instanceClass = "TextButton";
+					attributes.Text ||= " ";
 				}
+
+				break;
+			}
+			default: {
+				return <></>;
+			}
+		}
+
+		if (this.props.Key) {
+			return Roact.createFragment({
+				[this.props.Key]: Roact.createElement(instanceClass, attributes as never),
+			});
+		} else {
+			return Roact.createElement(instanceClass, attributes as never);
 		}
 	}
 
@@ -318,95 +322,77 @@ class WorseRowindComponent<T extends ObjectType, I extends GuiObject> extends Ro
 // Div,
 // Span,
 
-type PropsWithEventsAndChildren<X, D extends GuiObject> = PropsWithChildren<X> & {
-	mouseDown?: (input: InputObject) => void;
-	mouseUp?: (input: InputObject) => void;
-	Key?: string | number;
-	Effects?: IEffect[];
-	Props?: Partial<JSX.IntrinsicElement<D>>;
-	Events?: Partial<Roact.JsxInstanceEvents<D>>;
-};
+export function Div(props: PropsWithEventsAndChildren<{}, Frame>) {
+	const attributes = props as PropsWithEventsAndChildren<RowindComponentProps<Frame>, Frame>;
+	attributes.Effects ??= [];
+	attributes.Events ??= {};
+	attributes.Props ??= {};
+	attributes.flavour = ObjectType.Div;
 
-let _counter = 0;
-
-export function Div(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }, Frame>) {
-	return (
-		<WorseRowindComponent
-			Name={props.Key ?? _counter++}
-			mouseUp={props.mouseUp}
-			mouseDown={props.mouseDown}
-			flavour={ObjectType.Div}
-			className={props.className}
-			state_key={props.Id}
-			Effects={props.Effects ?? []}
-			Events={props.Events ?? {}}
-			Props={props.Props ?? {}}
-		>
-			{props[Roact.Children]}
-		</WorseRowindComponent>
-	);
+	// TODO: Do I even have to explain what's wrong here.
+	// For bug explanation see https://discord.com/channels/476080952636997633/1107669273020739594
+	if (props.Key) {
+		return Roact.createFragment({
+			[props.Key]: Roact.createElement(WorseRowindComponent as never, props),
+		});
+	} else {
+		return Roact.createElement(WorseRowindComponent as never, props);
+	}
 }
 
-export function CanvasDiv(props: PropsWithEventsAndChildren<{ className: string; Id?: string | number }, CanvasGroup>) {
-	return (
-		<WorseRowindComponent
-			Name={props.Key ?? _counter++}
-			mouseUp={props.mouseUp}
-			mouseDown={props.mouseDown}
-			flavour={ObjectType.CanvasDiv}
-			className={props.className}
-			state_key={props.Id}
-			Effects={props.Effects ?? []}
-			Events={props.Events ?? {}}
-			Props={props.Props ?? {}}
-		>
-			{props[Roact.Children]}
-		</WorseRowindComponent>
-	);
+export function CanvasDiv(props: PropsWithEventsAndChildren<{}, CanvasGroup>) {
+	const attributes = props as PropsWithEventsAndChildren<RowindComponentProps<CanvasGroup>, CanvasGroup>;
+	attributes.Effects ??= [];
+	attributes.Events ??= {};
+	attributes.Props ??= {};
+	attributes.flavour = ObjectType.CanvasDiv;
+
+	// TODO: Do I even have to explain what's wrong here.
+	// For bug explanation see https://discord.com/channels/476080952636997633/1107669273020739594
+	if (props.Key) {
+		return Roact.createFragment({
+			[props.Key]: Roact.createElement(WorseRowindComponent as never, props),
+		});
+	} else {
+		return Roact.createElement(WorseRowindComponent as never, props);
+	}
 }
 
-export function Span(
-	props: PropsWithEventsAndChildren<{ className: string; Id?: string | number; Text: string }, TextLabel>,
-) {
-	return (
-		<WorseRowindComponent
-			Name={props.Key ?? _counter++}
-			mouseUp={props.mouseUp}
-			mouseDown={props.mouseDown}
-			flavour={ObjectType.Span}
-			className={props.className}
-			Text={props.Text}
-			state_key={props.Id}
-			Effects={props.Effects ?? []}
-			Events={props.Events ?? {}}
-			Props={props.Props ?? {}}
-		>
-			{props[Roact.Children]}
-		</WorseRowindComponent>
-	);
+export function Span(props: PropsWithEventsAndChildren<{ Text: string }, TextLabel>) {
+	const attributes = props as PropsWithEventsAndChildren<RowindComponentProps<TextLabel>, TextLabel>;
+	attributes.Effects ??= [];
+	attributes.Events ??= {};
+	attributes.Props ??= {};
+	attributes.flavour = ObjectType.Span;
+
+	// TODO: Do I even have to explain what's wrong here.
+	// For bug explanation see https://discord.com/channels/476080952636997633/1107669273020739594
+	if (props.Key) {
+		return Roact.createFragment({
+			[props.Key]: Roact.createElement(WorseRowindComponent as never, props),
+		});
+	} else {
+		return Roact.createElement(WorseRowindComponent as never, props);
+	}
 }
 
-export function Button(
-	props: PropsWithEventsAndChildren<
-		{ className: string; Id?: string | number; Text?: string; Image?: string },
+export function Button(props: PropsWithEventsAndChildren<{ Text?: string; Image?: string }, TextButton | ImageButton>) {
+	const attributes = props as PropsWithEventsAndChildren<
+		RowindComponentProps<TextButton | ImageButton>,
 		TextButton | ImageButton
-	>,
-) {
-	return (
-		<WorseRowindComponent
-			Name={props.Key ?? _counter++}
-			mouseUp={props.mouseUp}
-			mouseDown={props.mouseDown}
-			flavour={ObjectType.Button}
-			className={props.className}
-			Text={props.Text}
-			Image={props.Image}
-			state_key={props.Id}
-			Effects={props.Effects ?? []}
-			Events={props.Events ?? {}}
-			Props={props.Props ?? {}}
-		>
-			{props[Roact.Children]}
-		</WorseRowindComponent>
-	);
+	>;
+	attributes.Effects ??= [];
+	attributes.Events ??= {};
+	attributes.Props ??= {};
+	attributes.flavour = ObjectType.Button;
+
+	// TODO: Do I even have to explain what's wrong here.
+	// For bug explanation see https://discord.com/channels/476080952636997633/1107669273020739594
+	if (props.Key) {
+		return Roact.createFragment({
+			[props.Key]: Roact.createElement(WorseRowindComponent as never, props),
+		});
+	} else {
+		return Roact.createElement(WorseRowindComponent as never, props);
+	}
 }

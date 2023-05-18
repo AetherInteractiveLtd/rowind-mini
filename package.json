@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/rowind-mini",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "",
   "main": "out/init.lua",
   "scripts": {
@@ -35,6 +35,7 @@
   "dependencies": {
     "@rbxts/object-utils": "^1.0.4",
     "@rbxts/roact": "^1.4.4-ts.0",
-    "@rbxts/services": "^1.5.1"
+    "@rbxts/services": "^1.5.1",
+    "roblox-ts": "^2.1.0"
   }
 }

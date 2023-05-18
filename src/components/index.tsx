@@ -108,7 +108,7 @@ class WorseRowindComponent<I extends GuiObject> extends Roact.Component<
 
 	private hookFrameEvents() {
 		const events = this.props.Events as Roact.JsxInstanceEvents<GuiObject>;
-		const roactEvents = this.roactEvents as Roact.JsxInstanceEvents<GuiObject>;
+		const roactEvents = table.clone(events) as Roact.JsxInstanceEvents<GuiObject>;
 
 		const mouseEnterSupplied = events.MouseEnter;
 		const mouseLeaveSupplied = events.MouseLeave;
@@ -232,7 +232,7 @@ class WorseRowindComponent<I extends GuiObject> extends Roact.Component<
 			}
 			case ObjectType.Span: {
 				instanceClass = "TextLabel";
-				attributes.Text ||= " ";
+				attributes.Text ??= " ";
 				break;
 			}
 			case ObjectType.Button: {
@@ -242,7 +242,7 @@ class WorseRowindComponent<I extends GuiObject> extends Roact.Component<
 					instanceClass = "ImageButton";
 				} else {
 					instanceClass = "TextButton";
-					attributes.Text ||= " ";
+					attributes.Text ??= " ";
 				}
 
 				break;

@@ -145,17 +145,17 @@ class WorseRowindComponent<I extends GuiObject> extends Roact.Component<
 			}
 			inputEndedSupplied?.(...args);
 		};
+
+		this.roactEvents = roactEvents as Roact.JsxInstanceEvents<I>;
 	}
 
 	public getActiveState() {
 		return stateForNamedComponent.get(this.stateKey)!;
 	}
 
-	public didUpdate(previousProps: PropsWithEventsAndChildren<RowindComponentProps<I>, I>, previousState: {}): void {
-		this.hookFrameEvents();
-	}
-
 	public render(): Roact.Element | undefined {
+		this.hookFrameEvents();
+
 		for (const effect of this.props.Effects) {
 			switch (effect.fxType) {
 				case FXType.Animate_ClassBased:
